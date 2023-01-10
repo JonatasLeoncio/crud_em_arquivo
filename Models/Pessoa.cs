@@ -27,34 +27,30 @@ namespace crud_em_arquivo.Models
 
         public List<Pessoa> ListarPessoaModel()
         {
-           
-            if (!File.Exists(caminho)|| new FileInfo(caminho).Length == 0)
+
+            if (!File.Exists(caminho) || new FileInfo(caminho).Length == 0)
             {
                 //File.Create(caminho).Close();
                 using var file = File.AppendText(caminho);
                 file.WriteLine("{\r\n  \"autoIncremente\": 1,\r\n  \"pessoaList\": []\r\n}");
                 file.Close();
-            }                          
+            }
 
             var json = File.ReadAllText(caminho);
             var banco = JsonConvert.DeserializeObject<Banco>(json);
-          
+
             List<Pessoa> listaPessoa = banco.pessoaList.ToList();
 
-            return listaPessoa;           
+            return listaPessoa;
         }
         public bool RescreverArquivo(List<Pessoa> pessoaList, bool autoIncremente)
         {
             Banco banco = new Banco();
-            if (autoIncremente)
-            {               
-                banco.autoIncremente = buscarAutoIncremente()+1;
-            }
-            else
-            {
-                banco.autoIncremente = buscarAutoIncremente();
-            }          
-           
+
+            int _autoIncremente = autoIncremente
+                ? buscarAutoIncremente() + 1
+                : buscarAutoIncremente();
+            banco.autoIncremente = _autoIncremente;
             banco.pessoaList = pessoaList;
             var json = JsonConvert.SerializeObject(banco, Formatting.Indented);
             File.WriteAllText(caminho, json);
@@ -66,17 +62,17 @@ namespace crud_em_arquivo.Models
             var banco = JsonConvert.DeserializeObject<Banco>(json);
 
             int idAutoIncremente = banco.autoIncremente;
-            Console.WriteLine("ttttt="+idAutoIncremente);
+            Console.WriteLine("ttttt=" + idAutoIncremente);
             return idAutoIncremente;
         }
 
         public Pessoa salvarPessoaModel(Pessoa pessoa)
-        {            
+        {
             List<Pessoa> listaPessoa = new List<Pessoa>();
             listaPessoa = ListarPessoaModel();
             pessoa.Id = buscarAutoIncremente();
             listaPessoa.Add(pessoa);
-            RescreverArquivo(listaPessoa,true);
+            RescreverArquivo(listaPessoa, true);
             return pessoa;
         }
     }
